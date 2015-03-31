@@ -53,7 +53,7 @@ function add(name, cb, port, init) {
     compiler(hapConfig.files);
     if(!init) { //Expecting the containers are already running
 		haproxy.restart(function(){
-		    cb && cb(port);
+		    cb && cb(portConfig);
 		});
 	}
 }

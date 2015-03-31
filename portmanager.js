@@ -19,6 +19,7 @@ module.exports = {
 
     getPortConfig : function(port) {
         return {
+            port : port,
             httpPort : port,
             terminalPort : port - 1000,
             httpsPort : port - 2000,
