@@ -14,13 +14,13 @@ function init(routeList) {
 	exec('mkdir -p tempfiles & cp -r hapconfigtemplate/config ' + defaultLocation, function(err, stdout, stderr) {
 		if(err||stdout||stderr) console.log(err, stdout, stderr);
 		routeList.forEach(function(route){
-			add(route.name, null, null, +route.port, true);
+			add(route.name, null, +route.port, true);
 		});
 		haproxy.init();
 	});
 }
 
-function add(name, image, cb, port, init) {
+function add(name, cb, port, init) {
     var hapConfig = compiler.getFiles(),
     frontend = hapConfig.frontend,
     secureFrontend = hapConfig.secureFrontend,
