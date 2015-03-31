@@ -102,5 +102,7 @@ module.exports = {
     remove : remove
 };
 
-
-
+init.init = init;
+init.add = add;
+init.remove = remove;
+module.exports = init;
