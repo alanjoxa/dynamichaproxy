@@ -1,0 +1,10 @@
+
+listen haproxyapp_admin:9100 127.0.0.1:9100
+  mode http
+  stats uri /
+  
+#dockerbox-box-start
+backend dockerbox_backend
+  balance roundrobin
+  server localhost_3000 localhost:3000
+#dockerbox-box-end

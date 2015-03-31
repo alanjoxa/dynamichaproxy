@@ -1,0 +1,9 @@
+{
+  "name": "dynamichaproxy",
+  "version": "0.0.1",
+  "dependencies": {
+    "underscore": "^1.6.0",
+    "haproxy": "^0.1.0",
+    "glob-whatev": "^0.1.8"
+  }
+}

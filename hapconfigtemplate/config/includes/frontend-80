@@ -1,0 +1,7 @@
+frontend  main *:80
+  default_backend dockerbox_backend
+
+#dockerbox-box-start
+  #acl isdockerbox hdr_beg(host) dockerbox
+  #use_backend dockerbox_backend if isdockerbox
+#dockerbox-box-end
