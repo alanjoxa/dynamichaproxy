@@ -1,23 +1,23 @@
 
 var compiler = require('./compiler'),
  portManager = require('./portmanager'),
- defaultLocation = "./tempfiles/",
+ defaultLocation = __dirname + "/tempfiles/",
  fs = require('fs'),
  path = require('path'),
  _ = require('underscore'),
  haproxy = require('./haproxy');
 
 function init(routeList) {
-	//copy the hap config template for the env
-	var exec = require('child_process').exec;
-	//Creating the tempfiles folder and copyng the proxyserver config
-	exec('mkdir -p tempfiles & cp -r hapconfigtemplate/config ' + defaultLocation, function(err, stdout, stderr) {
-		if(err||stdout||stderr) console.log(err, stdout, stderr);
-		routeList.forEach(function(route){
-			add(route.name, null, +route.port, true);
-		});
-		haproxy.init();
-	});
+    //copy the hap config template for the env
+    var exec = require('child_process').exec;
+    //Creating the tempfiles folder and copyng the proxyserver config
+    exec('mkdir -p '+defaultLocation+' & cp -r '+__dirname+'/hapconfigtemplate/config ' + defaultLocation, function(err, stdout, stderr) {
+        if(err||stdout||stderr) console.log(err, stdout, stderr);
+        routeList.forEach(function(route){
+            add(route.name, null, +route.port, true);
+        });
+        haproxy.init();
+    });
 }
 
 function add(name, cb, port, init) {
@@ -40,7 +40,7 @@ function add(name, cb, port, init) {
      "\n  use_backend " + name + "secure_backend if is" + name + "secure" +
      "\n" + SSComment(name).end + "\n";
 
-   	backend.content += "\n" + SSComment(name).start + 
+    backend.content += "\n" + SSComment(name).start + 
     "\nbackend " + name + "_backend\n  balance roundrobin\n  server localhost_" + portConfig.httpPort + " dockerlocalhost:" + portConfig.httpPort + 
     "\nbackend " + name + "secure_backend\n  balance roundrobin\n  server localhost_" + portConfig.httpsPort + " dockerlocalhost:" + portConfig.httpsPort + " ssl verify none" + 
     "\nbackend " + name + "terminal_backend\n  balance roundrobin\n  server localhost_" + portConfig.terminalPort + " dockerlocalhost:" + portConfig.terminalPort + 
@@ -52,10 +52,10 @@ function add(name, cb, port, init) {
 
     compiler(hapConfig.files);
     if(!init) { //Expecting the containers are already running
-		haproxy.restart(function(){
-		    cb && cb(portConfig);
-		});
-	}
+        haproxy.restart(function(){
+            cb && cb(portConfig);
+        });
+    }
 }
 
 function remove(name, port, cb) {
@@ -97,7 +97,7 @@ function SSComment(name) {
 }
 
 module.exports = {
-	init : init,
+    init : init,
     add : add,
     remove : remove
 };

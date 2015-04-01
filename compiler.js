@@ -4,7 +4,7 @@ var _ = require('underscore'),
     path = require('path'),
     glob = require('glob-whatev'),
     fs = require('fs'),
-    defaultLocation = './tempfiles/';
+    defaultLocation = __dirname + '/tempfiles/';
 
 
 function compileIncludes(files) {

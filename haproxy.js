@@ -1,8 +1,8 @@
 var haproxyMod = new require('haproxy'),
  compiler = require('./compiler'),
  HAProxy = haproxyMod({
-    config : './tempfiles/haproxy.cfg',
-    pidFile : './tempfiles/haproxy.pid'
+    config : __dirname + '/tempfiles/haproxy.cfg',
+    pidFile : __dirname + '/tempfiles/haproxy.pid'
 });
 
 
@@ -17,7 +17,7 @@ module.exports = {
             });
         });
     },
-	restart : function (cb) {
+    restart : function (cb) {
         HAProxy.reload(function (err) {
             if(err) {console.log(err); return cb(err);}
             else console.log('  .. HAP reloaded ..');
