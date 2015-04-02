@@ -73,8 +73,8 @@ function remove(name, port, cb) {
     fs.writeFileSync(path.join(defaultLocation, 'config/includes/backend'), backend.content);
 
     compiler(hapConfig.files);
-    haproxy.restart(cb);
     portManager.addUnused(port);
+    haproxy.restart(cb);
 }
 
 function removeProxyConf(fileContent, name) {
