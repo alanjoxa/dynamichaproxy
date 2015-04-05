@@ -8,3 +8,9 @@ backend dockerbox_backend
   balance roundrobin
   server localhost_3000 localhost:3000
 #dockerbox-box-end
+
+#couchdb-box-start
+backend couchdb_backend
+  balance roundrobin
+  server localhost_5984 localhost:5984
+#couchdb-box-end
