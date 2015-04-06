@@ -1,5 +1,6 @@
 var fs = require('fs'),
-    path = require('path');
+    path = require('path'),
+    defaultLocation = __dirname + '/tempfiles/';
 
 module.exports = {
     getPort : function (port) {
@@ -42,13 +43,13 @@ function getData() {
     };
     updateData(content);
     getData = function() {
-        return JSON.parse(fs.readFileSync(path.join('./tempfiles/proxyconfig.json'), 'utf8'));
+        return JSON.parse(fs.readFileSync(path.join(defaultLocation, 'proxyconfig.json'), 'utf8'));
     }
     return content;
 }
 
 function updateData(content) {
-    fs.writeFileSync(path.join('./tempfiles/proxyconfig.json'), JSON.stringify(content));
+    fs.writeFileSync(path.join(defaultLocation, 'proxyconfig.json'), JSON.stringify(content));
 }
 
 /*
