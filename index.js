@@ -1,6 +1,5 @@
 
 var compiler = require('./compiler'),
- portManager = require('./portmanager'),
  defaultLocation = __dirname + "/tempfiles/",
  fs = require('fs'),
  path = require('path'),
@@ -14,67 +13,100 @@ function init(routeList) {
     exec('mkdir -p '+defaultLocation+' & cp -r '+__dirname+'/hapconfigtemplate/config ' + defaultLocation, function(err, stdout, stderr) {
         if(err||stdout||stderr) console.log(err, stdout, stderr);
         routeList.forEach(function(route){
-            add(route.name, null, +route.port, true);
+            addHttpProxy(route.name, +route.port);
         });
         haproxy.init();
     });
 }
 
-function add(name, cb, port, init) {
+function addHttpProxy(name, port, cb) {
     var hapConfig = compiler.getFiles(),
     frontend = hapConfig.frontend,
-    secureFrontend = hapConfig.secureFrontend,
     backend = hapConfig.backend;
-    port = portManager.getPort(port),
-    portConfig = portManager.getPortConfig(port);
     
-    frontend.content += "\n" + SSComment(name).start +
-     "\n  acl is" + name + " hdr_beg(host) " + name + 
-     "\n  use_backend " + name + "_backend if is" + name + 
-     "\n  acl is" + name + "terminal hdr_beg(host) " + "terminal-" + name +
-     "\n  use_backend " + name + "terminal_backend if is" + name + "terminal" +
-     "\n" + SSComment(name).end + "\n";
-    
-    secureFrontend.content += "\n" + SSComment(name).start +
-     "\n  acl is" + name + "secure hdr_beg(host) " + name +
-     "\n  use_backend " + name + "secure_backend if is" + name + "secure" +
-     "\n" + SSComment(name).end + "\n";
+    frontend.content += "" +
+    "\n" + SSComment(name).start +
+    "\n  acl is" + name + " hdr_beg(host) " + name + 
+    "\n  use_backend " + name + "_backend if is" + name + 
+    "\n" + SSComment(name).end + "\n";
 
-    backend.content += "\n" + SSComment(name).start + 
-    "\nbackend " + name + "_backend\n  balance roundrobin\n  server localhost_" + portConfig.httpPort + " dockerlocalhost:" + portConfig.httpPort + 
-    "\nbackend " + name + "secure_backend\n  balance roundrobin\n  server localhost_" + portConfig.httpsPort + " dockerlocalhost:" + portConfig.httpsPort + " ssl verify none" + 
-    "\nbackend " + name + "terminal_backend\n  balance roundrobin\n  server localhost_" + portConfig.terminalPort + " dockerlocalhost:" + portConfig.terminalPort + 
+    backend.content += "" +
+    "\n" + SSComment(name).start + 
+    "\nbackend " + name + "_backend" + 
+    "\n  balance roundrobin" +
+    "\n  server localhost_" + port + " dockerlocalhost:" + port + 
     "\n" + SSComment(name).end + "\n";
 
     fs.writeFileSync(path.join(defaultLocation, 'config/includes/frontend-80'), frontend.content);
-    fs.writeFileSync(path.join(defaultLocation, 'config/includes/frontend-443'), secureFrontend.content);
     fs.writeFileSync(path.join(defaultLocation, 'config/includes/backend'), backend.content);
 
     compiler(hapConfig.files);
-    if(!init) { //Expecting the containers are already running
-        haproxy.restart(function(){
-            cb && cb(portConfig);
-        });
-    }
+    cb && cb();
+    return this;
 }
 
-function remove(name, port, cb) {
+function addHttpsProxy(name, port, cb) {
     var hapConfig = compiler.getFiles(),
-    frontend = hapConfig.frontend,
     secureFrontend = hapConfig.secureFrontend,
     backend = hapConfig.backend;
     
-    frontend.content = removeProxyConf(frontend.content, name);
-    secureFrontend.content = removeProxyConf(secureFrontend.content, name);
-    backend.content = removeProxyConf(backend.content, name);
+    secureFrontend.content += "" +
+    "\n" + SSComment(name).start +
+    "\n  acl is" + name + "secure hdr_beg(host) " + name +
+    "\n  use_backend " + name + "secure_backend if is" + name + "secure" +
+    "\n" + SSComment(name).end + "\n";
 
-    fs.writeFileSync(path.join(defaultLocation, 'config/includes/frontend-80'), frontend.content);
+    backend.content += "" +
+    "\n" + SSComment(name + "_secure").start + 
+    "\nbackend " + name + "secure_backend" +
+    "\n  balance roundrobin" +
+    "\n  server localhost_" + port + " dockerlocalhost:" + port + " ssl verify none" + 
+    "\n" + SSComment(name + "_secure").end + "\n";
+
     fs.writeFileSync(path.join(defaultLocation, 'config/includes/frontend-443'), secureFrontend.content);
     fs.writeFileSync(path.join(defaultLocation, 'config/includes/backend'), backend.content);
 
     compiler(hapConfig.files);
-    portManager.addUnused(port);
-    haproxy.restart(cb);
+    cb && cb();
+    return this;
+}
+
+function removeHttpProxy(name, cb) {
+    var hapConfig = compiler.getFiles(),
+    frontend = hapConfig.frontend,
+    backend = hapConfig.backend;
+    
+    frontend.content = removeProxyConf(frontend.content, name);
+    backend.content = removeProxyConf(backend.content, name);
+
+    fs.writeFileSync(path.join(defaultLocation, 'config/includes/frontend-80'), frontend.content);
+    fs.writeFileSync(path.join(defaultLocation, 'config/includes/backend'), backend.content);
+
+    compiler(hapConfig.files);
+    cb && cb();
+    return this;
+}
+
+function removeHttpsProxy(name, cb) {
+    var hapConfig = compiler.getFiles(),
+    secureFrontend = hapConfig.secureFrontend,
+    backend = hapConfig.backend;
+    
+    secureFrontend.content = removeProxyConf(secureFrontend.content, name);
+    backend.content = removeProxyConf(backend.content, name + "_secure");
+
+    fs.writeFileSync(path.join(defaultLocation, 'config/includes/frontend-443'), secureFrontend.content);
+    fs.writeFileSync(path.join(defaultLocation, 'config/includes/backend'), backend.content);
+
+    compiler(hapConfig.files);
+    cb && cb();
+    return this;
+}
+
+function restartHaproxy(cb) {
+    haproxy.restart(function(){
+        cb && cb();
+    });
 }
 
 function removeProxyConf(fileContent, name) {
@@ -96,14 +128,12 @@ function SSComment(name) {
     };
 }
 
-module.exports = {
-    init : init,
-    add : add,
-    remove : remove
-};
+
 
 init.init = init;
-init.add = add;
-init.remove = remove;
-init.portManager = portManager;
+init.addHttpProxy = addHttpProxy;
+init.addHttpsProxy = addHttpsProxy;
+init.removeHttpProxy = removeHttpProxy;
+init.removeHttpsProxy = removeHttpsProxy;
+init.restart = restartHaproxy;
 module.exports = init;
