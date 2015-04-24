@@ -105,4 +105,5 @@ module.exports = {
 init.init = init;
 init.add = add;
 init.remove = remove;
+init.portManager = portManager;
 module.exports = init;
