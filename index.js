@@ -71,7 +71,7 @@ function addHttpsProxy(name, port, cb) {
     return this;
 }
 
-function removeHttpProxy(name, cb) {
+function removeHttpProxy(name, port, cb) {
     var hapConfig = compiler.getFiles(),
     frontend = hapConfig.frontend,
     backend = hapConfig.backend;
@@ -87,7 +87,7 @@ function removeHttpProxy(name, cb) {
     return this;
 }
 
-function removeHttpsProxy(name, cb) {
+function removeHttpsProxy(name, port, cb) {
     var hapConfig = compiler.getFiles(),
     secureFrontend = hapConfig.secureFrontend,
     backend = hapConfig.backend;
