@@ -18,10 +18,18 @@ module.exports = {
         });
     },
     restart : function (cb) {
-        HAProxy.reload(function (err) {
+        /*HAProxy.reload(function (err) {
             if(err) {console.log(err); return cb(err);}
             else console.log('  .. HAP reloaded ..');
             cb();
+        });*/
+
+        var all = true; // Kill all running Haproxy
+        HAProxy.stop(all, function(err){
+            HAProxy.start(function (err) {
+                if(err) {console.log(err); return;}
+                else console.log('  .. HAP started ..');
+            });
         });
     }
 };
