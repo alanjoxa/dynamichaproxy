@@ -12,7 +12,7 @@ function init(routeList) {
     //Creating the tempfiles folder and copyng the proxyserver config
     exec('mkdir -p '+defaultLocation+' & cp -r '+__dirname+'/hapconfigtemplate/config ' + defaultLocation, function(err, stdout, stderr) {
         if(err||stdout||stderr) console.log(err, stdout, stderr);
-        routeList.forEach(function(route){
+        (routeList || []).forEach(function(route){
             addHttpProxy(route.name, +route.port);
         });
         haproxy.init();
