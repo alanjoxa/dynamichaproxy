@@ -7,6 +7,6 @@ frontend  main *:80
 #dockerbox-box-end
 
 #couchdb-box-start
-  acl iscouchdb hdr_beg(host) couchdb
+  acl iscouchdb hdr_beg(host) couchdb.
   use_backend couchdb_backend if iscouchdb
 #couchdb-box-end

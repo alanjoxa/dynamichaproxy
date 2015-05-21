@@ -26,7 +26,7 @@ function addHttpProxy(name, port, cb) {
     
     frontend.content += "" +
     "\n" + SSComment(name).start +
-    "\n  acl is" + name + " hdr_beg(host) " + name + 
+    "\n  acl is" + name + " hdr_beg(host) " + name + "." + 
     "\n  use_backend " + name + "_backend if is" + name + 
     "\n" + SSComment(name).end + "\n";
 
@@ -52,7 +52,7 @@ function addHttpsProxy(name, port, cb) {
     
     secureFrontend.content += "" +
     "\n" + SSComment(name).start +
-    "\n  acl is" + name + "secure hdr_beg(host) " + name +
+    "\n  acl is" + name + "secure hdr_beg(host) " + name + "." +
     "\n  use_backend " + name + "secure_backend if is" + name + "secure" +
     "\n" + SSComment(name).end + "\n";
 
