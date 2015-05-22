@@ -13,13 +13,13 @@ function init(routeList) {
     exec('mkdir -p '+defaultLocation+' & cp -r '+__dirname+'/hapconfigtemplate/config ' + defaultLocation, function(err, stdout, stderr) {
         if(err||stdout||stderr) console.log(err, stdout, stderr);
         (routeList || []).forEach(function(route){
-            addHttpProxy(route.name, +route.port);
+            addHttpProxy(route.name, route.targethost);
         });
         haproxy.init();
     });
 }
 
-function addHttpProxy(name, port, cb) {
+function addHttpProxy(name, targethost, cb) {
     var hapConfig = compiler.getFiles(),
     frontend = hapConfig.frontend,
     backend = hapConfig.backend;
@@ -34,7 +34,7 @@ function addHttpProxy(name, port, cb) {
     "\n" + SSComment(name).start + 
     "\nbackend " + name + "_backend" + 
     "\n  balance roundrobin" +
-    "\n  server localhost_" + port + " dockerlocalhost:" + port + 
+    "\n  server host_" + name + " " + targethost + 
     "\n" + SSComment(name).end + "\n";
 
     fs.writeFileSync(path.join(defaultLocation, 'config/includes/frontend-80'), frontend.content);
@@ -45,7 +45,7 @@ function addHttpProxy(name, port, cb) {
     return this;
 }
 
-function addHttpsProxy(name, port, cb) {
+function addHttpsProxy(name, targethost, cb) {
     var hapConfig = compiler.getFiles(),
     secureFrontend = hapConfig.secureFrontend,
     backend = hapConfig.backend;
@@ -60,7 +60,7 @@ function addHttpsProxy(name, port, cb) {
     "\n" + SSComment(name + "_secure").start + 
     "\nbackend " + name + "secure_backend" +
     "\n  balance roundrobin" +
-    "\n  server localhost_" + port + " dockerlocalhost:" + port + " ssl verify none" + 
+    "\n  server host_" + name + " " + targethost + " ssl verify none" + 
     "\n" + SSComment(name + "_secure").end + "\n";
 
     fs.writeFileSync(path.join(defaultLocation, 'config/includes/frontend-443'), secureFrontend.content);
